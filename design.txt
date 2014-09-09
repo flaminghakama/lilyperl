@@ -1,0 +1,96 @@
+OBJECTS - Book 
+==========
+
+Book  
+ 
+  Header 
+    piece = 
+    source = ""
+    style = ""
+    copyright = \markup { \tiny "copyright © 2013 D. Elaine Alt" } 
+    lastupdated = ""
+    title = \markup { \fontsize #8 \bold "Rising" }
+    titleFontSize = 8
+    poet = ""
+    composer = "D. Elaine Alt"
+    arranger = ""
+    tagline = ""
+
+  Paper
+    page.size 
+    page.orientation 
+    space. afterHeaderFirstPage 
+    space. afterHeaderNextPage 
+    space. betweenSystems 
+    space. betweenTopOfPageAndHeader 
+    pagination.printPageNumberFirst 
+    pagination.printPageNumberNext 
+    pagination.titleSplitLeft 
+    pagination.titleSplitRight  
+    font.main 
+    font.secondary 
+    font.chords 
+
+  ScoreDefaults 
+    staffSize 
+    barNumberVisibility 
+    Layout 
+
+  Scores  
+    barNumberVisibility 
+    scoreList ( Score + )
+ 
+Layout 
+  indent 
+  shortIndent 
+  chordName-fontSize 
+  raggedRight 
+  raggedLast 
+  Contexts 
+    [ LyricsContext, ChordsContext, ProportionalityContext ] +
+
+Context 
+  context 
+  value 
+
+Score 
+    Header 
+    currentBarNumber 
+    barNumberVisibility 
+    Staff Groups 
+      Staff Group +
+    Layout 
+
+Staff Group
+  name
+  Staffs
+    [ Staff, PianoStaff, DrumStaff ] +
+
+Staff
+  instrumentName 
+  shortInstrumentName 
+  midiInstrument
+  clef
+  music
+  musicTransposeFrom 
+  musicTransposeTo 
+  chords
+  chordTransposeFrom 
+  chordTransposeTo 
+
+
+OBJECTS - Part
+==========
+
+MidiNames
+PdfNames  
+StaffNames
+PartNames
+
+Part
+  Names
+  Score
+  realEstate
+<  includes
+
+
