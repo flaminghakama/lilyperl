@@ -2,7 +2,6 @@ package Fonts ;
 sub new {
     my $class = shift;
     my $self = shift ; 
-
     unless ( ref($self) eq 'HASH' ) { 
         $self = {
             main => $self, 
@@ -10,7 +9,6 @@ sub new {
             chords => shift
         } ;
     }
-
     return bless $self, $class;
 }
 

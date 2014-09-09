@@ -1,87 +1,47 @@
-package Paper ; 
-use Page ; 
-use Space ; 
-use Pagination ; 
-use Fonts ; 
+package Paper;
 
 sub new {
     my $class = shift;
     my $self = shift ; 
     unless ( ref($self) eq 'HASH' ) { 
         $self = {
-            page => $self, 
-            space => shift,
-            pagination => shift, 
-            fonts => shift
-        }
-    } ; 
+            size        => $self,
+            orientation => shift
+        };
+    }
     return bless $self, $class;
 }
 
-sub page {
+sub definePaperSize {
     my ( $self, $value ) = @_; 
-    $self->{page} = $value if defined $value ; 
-    return $self->{page};
+    $self->{definition} = $value if defined $value ; 
+    return $self->{definition};
 }
 
-sub space {
+sub size {
     my ( $self, $value ) = @_; 
-    $self->{space} = $value if defined $value ; 
-    return $self->{space};
+    $self->{size} = $value if defined $value ; 
+    return $self->{size};
 }
 
-sub pagination {
+sub orientation {
     my ( $self, $value ) = @_; 
-    $self->{pagination} = $value if defined $value ; 
-    return $self->{pagination};
+    $self->{orientation} = $value if defined $value ; 
+    return $self->{orientation};
 }
 
-sub fonts {
-    my ( $self, $value ) = @_; 
-    $self->{fonts} = $value if defined $value ; 
-    return $self->{fonts};
-}
-
-sub render {
+sub render { 
     my $self = shift ; 
+    my @lilypond = () ;
 
-    my $margin = shift ; 
-    my $indent = $margin . '    ' ;
-    my $pageNumberFirst = ( $self->pagination()->printPageNumberFirst() ) ? '##t' : '##f' ; 
-    my $pageNumberNext = ( $self->pagination()->printPageNumberNext() ) ? '##t' : '##f' ;  
-    my $titleSplitLeft = $self->pagination()->titleSplitLeft() ;
-    my $titleSplitRight = $self->pagination()->titleSplitRight() ; 
-    my (@spacing) = $self->space()->render() ; 
-
-    my @lilypond = ( 
-            $self->{page}->render(),
-            $self->fonts()->render(), 
-            '\paper {',
-            $indent . "print-page-number = $pageNumberFirst",
-            $indent . "print-first-page-number = $pageNumberFirst",
-            q^
-    oddHeaderMarkup = \markup {
-        \fill-line {
-            \on-the-fly #print-page-number-check-first
-            \fromproperty #'header:poet
-            \on-the-fly #print-page-number-check-first^,  
-            "$indent$indent$indent\"                              $titleSplitLeft --\"", q^
-            \on-the-fly #print-page-number-check-first
-            \fromproperty #'page:page-number-string
-            \on-the-fly #print-page-number-check-first^,
-            "$indent$indent$indent\"-- $titleSplitRight                                 \"", q^
-            \on-the-fly #print-page-number-check-first
-            \fromproperty #'header:composer
-        }
+    if ( defined $self->{definition} ) { 
+        push ( @lilypond, $self->{definition} ) ; 
     }
-    evenHeaderMarkup = \oddHeaderMarkup
-    oddFooterMarkup = \markup { \fill-line { \fromproperty #'header:copyright } }
-    evenFooterMarkup = \oddFooterMarkup
-^,
-            @spacing, 
-            '}'
-        );
 
-    return @lilypond ; 
+    push ( @lilypond, 
+           "#(set-default-paper-size \"" . $self->{size} . "\" '" . $self->{orientation} . ")" ) ;
+
+    return @lilypond ;  
 }
-1 ;
+
+1;

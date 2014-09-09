@@ -1,4 +1,5 @@
 package StaffGroup ; 
+use Staff ; 
 
 sub new {
     my $class = shift;
@@ -6,10 +7,11 @@ sub new {
     unless ( ref($self) eq 'HASH' ) { 
         $self = {
             name => $self,
-            staves => shift
+            instruments => shift
         }
     } ;
-    return bless $self, $class;
+    bless $self, $class;
+    return $self->instruments( $self->{instruments} ) ; 
 }
 
 sub name {
@@ -18,30 +20,65 @@ sub name {
     return $self->{name};
 }
 
-sub staves {
-    my ( $self, $value ) = @_; 
-    $self->{staves} = $value if defined $value ; 
-    return $self->{staves};
+#
+#  Returns current instrument list if you specify nothing
+#  If you supply a list of instruments (or instrument list ref), 
+#      update each instrument's staffGroup property to reflect this staff group
+#      and replace the instrument list with the updated list.
+#
+sub instruments {
+    my $self = shift ; 
+    my $instrumentsRef = shift ; 
+    return $self->{instruments} unless $instrumentsRef ; 
+
+    (@instruments) = ( ref($instrumentsRef) eq 'ARRAY' ) ? @$instrumentsRef : ($instrumentsRef, @_) ; 
+
+    my $instrument ; 
+    my @contextualInstruments ; 
+    foreach $instrument (@instruments) {
+        $instrument->staffGroup( $self->name() ) ; 
+        push( @contextualInstruments, $instrument ) ; 
+    }
+    $self->{instruments} = \@contextualInstruments ; 
+    return $self->{instruments} ; 
 }
 
+#
+#  Return the instrument of the specified name.
+#  If no instrument matches, return undef. 
+#
+sub instrument { 
+    my $self = shift ; 
+    my $name = shift ; 
+    my $instrument ; 
+    my @instruments = $self->instruments() ; 
+    foreach $instrument (@instruments) {
+        return $instrument if ( $instrument->name() eq $name ) ; 
+    }
+    return undef ; 
+}
 
 sub render {
     my $self = shift ; 
     my $margin = shift ; 
     my $indent = $margin . '    ' ;
+    my $concert = shift ; 
+
     my @lilypond = () ; 
     $name = ( defined $self->name() ) ? '= "' . $self->name() . '" ' : '' ; 
     push( @lilypond, "$margin\\new StaffGroup $name<<") ; 
 
-    my $staff ; 
-    my $stavesRef = $self->staves() ; 
-    foreach $staff (@$stavesRef) {
-        push(@lilypond, $staff->render($indent)) ; 
+    my $instrument ; 
+    my $instrumentsRef = $self->instruments() ; 
+    foreach $instrument (@$instrumentsRef) {
+        my $staff = $instrument->createStaff( $indent, $transposed ) ; 
+        push(@lilypond, $staff->render() ; 
     }
 
     push( @lilypond, "$margin>>") ; 
     return @lilypond ; 
 }
+
 package GrandStaff ;
 use base qw(StaffGroup);
 

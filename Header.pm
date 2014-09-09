@@ -93,7 +93,7 @@ sub render {
     my $margin = shift ;
     my $indent = $margin . '    ' ; 
     my @lilypond = () ; 
-    if ( $self->piece() ) { push (@lilypond, $indent . 'piece = "' . $self->piece() . '"') ; }
+    $self->lilypush( $self->piece(), $indent . 'piece = "', '"') ;  
     if ( $self->source() ) { push (@lilypond, $indent . 'source = "' . $self->source() . '"') ; }
     if ( $self->style() ) { push (@lilypond, $indent . 'style = "' . $self->style() . '"') ; }
     if ( $self->copyright() ) { push (@lilypond, $indent . 'copyright = "' . $self->copyright() . '"') ; }
