@@ -47,10 +47,23 @@ sub clone {
     my $self = shift;
     my $copy;
     foreach my $key (keys %$self) {
-        if(ref $self->{$key}) {
-            $copy->{$key} = $self->{$key}->clone(); 
+        if( ref($self->{$key}) eq 'ARRAY' )  {
+            my @things ; 
+            my $thing ; 
+            foreach $thing ( @{ $self->{$key} } ) { 
+                if ( ref $thing ) {
+                    push( @things, $thing->clone() ) ; 
+                } else { 
+                    push( @things, $thing ) ; 
+                }
+            }
+            $copy->{$key} = \@things ; 
         } else {
-            $copy->{$key} = $self->{$key};
+            if ( ref $self->{$key} ) {
+                $copy->{$key} = $self->{$key}->clone(); 
+            } else {
+                $copy->{$key} = $self->{$key};
+            }
         }
     }
     bless $copy, ref $self;

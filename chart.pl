@@ -654,7 +654,7 @@ foreach $score (@scores) {
         close $fh ; 
     }
 }
-exit 0 ; 
+
 
 #
 #      Create chart for full score - transposed
@@ -662,7 +662,7 @@ exit 0 ;
 $filename = 'scores/Transposed.ly' ; 
 open( $fh, '>', $filename ) or 
     die "Could not open score file '$filename': " . $! ;  
-
+print "$filename\n" ; 
 $visiblePartName = "Score (Transposed)" ; 
 
 $chartNames{$visiblePartName} = ChartNames->new ({ 
@@ -679,8 +679,10 @@ $chart{$visiblePartName} = Chart->new ({
     'book'     => $book{'master'}
 }) ;
 
-#print( $fh, $chart{$visiblePartName}->render() ) ; 
-close( $fh ) ; 
+(@rendered) = $chart{$visiblePartName}->render() ; 
+print $fh join("\n", @rendered, '') ; 
+close $fh ; 
+
 
 #
 #      Create chart for full score - concert
@@ -707,8 +709,9 @@ $chart{$visiblePartName} = Chart->new ({
     'book'     => $book{$visiblePartName}
 }) ;
 
-#print( $fh, $chart{$scoreName}->render() ) ; 
-close( $fh ) ; 
+(@rendered) = $chart{$scoreName}->render() ;
+print $fh join("\n", @rendered, '') ; 
+close $fh  ; 
 
 #
 #      For each instrument, 

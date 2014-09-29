@@ -78,6 +78,7 @@ sub render {
     my $margin = shift ; 
     my $indent = $margin . '    ' ;
     my $musicSuffix = shift ; 
+    my $transposed = shift ; 
 
     my @lilypond = () ; 
     $name = ( defined $self->name() ) ? '= "' . $self->name() . '" ' : '' ; 
