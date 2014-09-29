@@ -2,7 +2,7 @@ package Header ;
 sub new {
     my $class = shift;
     my $self = shift ; 
-
+    my @lilypond ; 
     unless ( ref($self) eq 'HASH' ) { 
         $self = {
             piece => $self, 
@@ -15,10 +15,13 @@ sub new {
             poet => shift,    
             composer => shift,    
             arranger => shift,    
-            tagline => shift
+            tagline => shift, 
+            lilypond => shift 
         } ;
     }
-
+    unless ( $self->{lilyond} ) {
+        $self->{lilypond} = \@lilypond ;  
+    }
     return bless $self, $class;
 }
 
@@ -88,22 +91,38 @@ sub tagline {
     return $self->{tagline};
 }
 
+sub lilypond {
+    my ( $self, $value ) = @_; 
+    $self->{lilypond} = $value if defined $value ; 
+    return $self->{lilypond};
+}
+
+sub conditionalLily {
+    my ( $self, $value, $before, $after ) = @_ ; 
+    if ( $value ) { 
+        my $lilypondRef = $self->lilypond() ; 
+        my @lilypond = @$lilypondRef ; 
+        push( @lilypond, $before . $value . $after ) ; 
+        $self->{lilypond} = \@lilypond ;
+    }
+    return $self->{lilypond} ; 
+}
+
 sub render {
     my $self = shift ; 
     my $margin = shift ;
     my $indent = $margin . '    ' ; 
-    my @lilypond = () ; 
-    $self->lilypush( $self->piece(), $indent . 'piece = "', '"') ;  
-    if ( $self->source() ) { push (@lilypond, $indent . 'source = "' . $self->source() . '"') ; }
-    if ( $self->style() ) { push (@lilypond, $indent . 'style = "' . $self->style() . '"') ; }
-    if ( $self->copyright() ) { push (@lilypond, $indent . 'copyright = "' . $self->copyright() . '"') ; }
-    if ( $self->lastupdated() ) { push (@lilypond, $indent . 'lastupdated = "' . $self->lastupdated() . '"') ; }
-    if ( $self->title() ) { push (@lilypond, $indent . 'title = "' . $self->title() . '"') ; }
-    if ( $self->titleFontSize() ) { push (@lilypond, $indent . 'titleFontSize = "' . $self->titleFontSize() . '"') ; }
-    if ( $self->poet() ) { push (@lilypond, $indent . 'poet = "' . $self->poet() . '"') ; }
-    if ( $self->composer() ) { push (@lilypond, $indent . 'composer = "' . $self->composer() . '"') ; }
-    if ( $self->arranger() ) { push (@lilypond, $indent . 'arranger = "' . $self->arranger() . '"') ; }
-    if ( $self->tagline() ) { push (@lilypond, $indent . 'tagline = "' . $self->tagline() . '"') ; }
-    return @lilypond ;  
+    $self->conditionalLily( $self->piece(), $indent . 'piece = "', '"') ;  
+    $self->conditionalLily( $self->source(), $indent . 'source = "', '"') ;
+    $self->conditionalLily( $self->style(), $indent . 'style = "', '"') ;
+    $self->conditionalLily( $self->copyright(), $indent . 'copyright = "', '"') ;
+    $self->conditionalLily( $self->lastupdated(), $indent . 'lastupdated = "', '"') ;
+    $self->conditionalLily( $self->title(), $indent . 'title = "', '"') ;
+    $self->conditionalLily( $self->titleFontSize(), $indent . 'titleFontSize = "', '"') ;
+    $self->conditionalLily( $self->poet(), $indent . 'poet = "', '"') ;
+    $self->conditionalLily( $self->composer(), $indent . 'composer = "', '"') ;
+    $self->conditionalLily( $self->arranger(), $indent . 'arranger = "', '"') ;
+    $self->conditionalLily( $self->tagline(), $indent . 'tagline = "', '"') ;
+    return @{ $self->lilypond() };  
 }
 1 ;

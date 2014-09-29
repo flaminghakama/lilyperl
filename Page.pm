@@ -3,7 +3,6 @@ use Paper ;
 use Space ; 
 use Pagination ; 
 use Fonts ; 
-use PageDefaults ;
 
 sub new {
     my $class = shift;
@@ -85,4 +84,5 @@ sub render {
 
     return @lilypond ; 
 }
+
 1 ;

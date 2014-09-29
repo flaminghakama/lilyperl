@@ -10,8 +10,20 @@ sub new {
             instruments => shift
         }
     } ;
-    bless $self, $class;
-    return $self->instruments( $self->{instruments} ) ; 
+    return bless $self, $class;
+}
+
+sub clone {
+    my $self = shift;
+    my $copy;
+    foreach my $key (keys %$self) {
+        if(ref $self->{$key}) {
+            $copy->{$key} = $self->{$key}->clone(); 
+        } else {
+            $copy->{$key} = $self->{$key};
+        }
+    }
+    bless $copy, ref $self;
 }
 
 sub name {
@@ -58,24 +70,28 @@ sub instrument {
     return undef ; 
 }
 
+#
+#  Takes as arguments: margin, musicSuffix, transposed
+#
 sub render {
     my $self = shift ; 
     my $margin = shift ; 
     my $indent = $margin . '    ' ;
-    my $concert = shift ; 
+    my $musicSuffix = shift ; 
 
     my @lilypond = () ; 
     $name = ( defined $self->name() ) ? '= "' . $self->name() . '" ' : '' ; 
     push( @lilypond, "$margin\\new StaffGroup $name<<") ; 
 
     my $instrument ; 
+    my $staff ; 
     my $instrumentsRef = $self->instruments() ; 
     foreach $instrument (@$instrumentsRef) {
-        my $staff = $instrument->createStaff( $indent, $transposed ) ; 
-        push(@lilypond, $staff->render() ; 
+        $staff = $instrument->createStaff( $musicSuffix, $transposed ) ; 
+        push( @lilypond, $staff->render($indent) ) ; 
     }
 
-    push( @lilypond, "$margin>>") ; 
+    push( @lilypond, "$margin>>" ) ; 
     return @lilypond ; 
 }
 

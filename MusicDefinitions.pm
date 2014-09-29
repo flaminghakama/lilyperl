@@ -10,7 +10,7 @@ sub new {
             functions => $self, 
             functionsFilename => shift, 
             functionsInclude => shift, 
-            staffGroupIncludes => shift 
+            staffGroupIncludes => shift
         } ; 
     }
     $self->{functions} = \@functions ; 
@@ -25,12 +25,18 @@ sub functions {
 }
 
 sub pushFunction {
-    my ( $self, @values ) = @_; 
-    my (@functions) = $self->{functions} ; 
-    if ( @values ) { 
-        push( @functions, @values) ; 
-        $self->{functions} = \@functions ; 
+    my ( $self, @lines ) = @_ ; 
+    my $line ; 
+    my $functionsRef = $self->{functions} ; 
+    my @functions = @$functionsRef ; 
+    foreach $line ( @lines ) { 
+        if ( ref($line) eq 'ARRAY' ) { 
+            push( @functions, @$line ) ;
+        } else { 
+            push( @functions, $line ) ; 
+        }
     }
+    $self->{functions} = \@functions ; 
     return $self->{functions};
 }
 

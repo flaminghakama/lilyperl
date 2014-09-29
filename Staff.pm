@@ -14,11 +14,14 @@ sub new {
             musicTransposeTo => shift,
             chords => shift,
             chordTransposeFrom => shift,
-            chordTransposeTo => shift
+            chordTransposeTo => shift,
+            lilypond => shift 
         } ; 
     }
     my @lilypond ; 
-    $self->{lilypond} = \@lilypond ; 
+    unless ( $self->{lilypond} ) { 
+        $self->{lilypond} = \@lilypond ; 
+    }
     return bless $self, $class;
 }
 
@@ -114,7 +117,13 @@ sub reverseTransposeMusic {
 sub transposeChords {
     my $self = shift ;
     my $chords = shift ; 
-    $chords = ( $chords ) ? $chords : $self->chords() ; 
+    unless ( $chords ) { 
+        if ( defined $self->{chords} ) {
+            $chords = $self->chords() ; 
+        } else {
+            return ; 
+        }
+    }
     return $self->transpose( $chords, $self->chordsTransposeTo(), $self->chordsTransposeFrom() ) ; 
 }
 
@@ -133,7 +142,8 @@ sub lilypond {
 
 sub lilypush {
     my ( $self, @lines ) = @_ ; 
-    my (@lilypond) = $self->lilypond() ; 
+    my $lilypondRef = $self->lilypond() ; 
+    my @lilypond = @$lilypondRef ; 
     push( @lilypond, @lines ) ; 
     $self->{lilypond} = \@lilypond ;
     return $self->{lilypond} ; 
@@ -142,7 +152,8 @@ sub lilypush {
 sub conditionalLily {
     my ( $self, $value, $before, $after ) = @_ ; 
     if ( $value ) { 
-        my (@lilypond) = $self->lilypond() ; 
+        my $lilypondRef = $self->lilypond() ; 
+        my @lilypond = @$lilypondRef ; 
         push( @lilypond, $before . $value . $after ) ; 
         $self->{lilypond} = \@lilypond ;
     }
@@ -155,18 +166,18 @@ sub render {
     my $indent = $margin . '    ' ;
     my @lilypond = () ; 
     $self->{lilypond} = \@lilypond ; 
-    $self->lilypush( $margin . '\new ChordNames '. $self->transposeChords() ) ; 
+    $self->conditionalLily( $self->transposeChords(),  $margin . '\new ChordNames ' ) ; 
     $self->lilypush( $margin . '\new Staff {' ) ; 
     $self->conditionalLily( $self->instrumentName(), $indent . '\set Staff.instrumentName = #"', '"' ) ; 
     $self->conditionalLily( $self->shortInstrumentName(), $indent . '\set Staff.shortInstrumentName = #"', '"' ) ;
-    $self->conditionalLily( $self->midiInstrument(), '\set Staff.midiInstrument = #"', '"' ) ; 
-    $self->conditionalLily( $self->clef(), '\clef ' ) ;  
+    $self->conditionalLily( $self->midiInstrument(), $indent . '\set Staff.midiInstrument = #"', '"' ) ; 
+    $self->conditionalLily( $self->clef(), $indent . '\clef ' ) ;  
     $self->lilypush( 
         $indent . $self->transposeMusic(),
         $margin . '}' 
     ) ;
 
-    return $self->lilypond() ; 
+    return @{ $self->lilypond() }; 
 }
 
 

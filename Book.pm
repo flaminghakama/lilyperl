@@ -3,6 +3,7 @@ use Paper ;
 use Header ; 
 use Score ; 
 use MusicDefinitions ; 
+use Includes ; 
 use Scalar::Util 'blessed';
 my $isa = sub {blessed $_[0] and $_[0]->isa($_[1])};
 use parent 'Clone';
@@ -31,12 +32,28 @@ sub new {
         } ; 
     }
     if ( blessed $self->{scores} ) { 
-        if ( $self->{scores}->isa('Staff');
+        if ( $self->{scores}->isa('Staff') ) {
             @scores = ( $self->{scores} ) ; 
             $self->{scores} =  \@scores ; 
         }
     } 
+    unless ( $self->{musicDefinitions} ) {
+        $self->{musicDefinitions} = MusicDefinitions->new() ; 
+    }
     return bless $self, $class;
+}
+
+sub clone {
+    my $self = shift;
+    my $copy;
+    foreach my $key (keys %$self) {
+        if(ref $self->{$key}) {
+            $copy->{$key} = $self->{$key}->clone(); 
+        } else {
+            $copy->{$key} = $self->{$key};
+        }
+    }
+    bless $copy, ref $self;
 }
 
 sub name {
@@ -69,25 +86,32 @@ sub header {
     return $self->{header};
 }
 
-#
-#  Accepts either a reference to an array (of scores) 
-#  Or a single score.
-#
 sub scores {
     my ( $self, $value ) = @_; 
     $self->{scores} = $value if defined $value ;
-    if ( blessed $self->{scores} ) { 
-        if ( $self->{scores}->isa('Staff');
-            my @scores = ( $self->{scores} ) ; 
-            $self->{scores} =  \@scores ; 
-        }
-    } 
     return $self->{scores};
 }
 
-sub addScores {
+sub getScores {
+    my ( $self, @scoreNames ) = @_; 
+    my $scoreName ; 
+    my $scoresRef = $self->scores() ; 
+    my @scores = @$scoresRef ; 
+    my @selectedScores ; 
+    foreach $scoreName ( @scoreNames ) {
+        foreach $score ( @scores ) {
+            if ( $score->name() eq $scoreName ) { 
+                push( @selectedScores, $score ) ; 
+            } 
+        }
+    }
+    return @selectedScores;
+}
+
+sub pushScores {
     my ( $self, @newScores ) = shift ; 
-    my (@scores) = $self->scores() ; 
+    my $scoresRef = $self->scores() ; 
+    my @scores = @$scoresRef ; 
     my $score ; 
     foreach $score ( @newScores ) {
         push( @scores, $score ) ; 
@@ -103,19 +127,20 @@ sub transposed {
 }
 
 #
-#  @param {String} filename Where to save the functions (does not create the file).
+#  @param {String} filename The file where the functions will be saved (does not create the file).
 #  @param {Array} List of lilypond lines to include between each section of a score, which defaults to a double bar line.  
 #  @returns {Array} Populaltes the musicDefinitions->()functions() property returns these function definitions.
 #
 sub createConstructorFunctions {
 
-    my ( $self, filename, @betweenSections ) = shift ;
-    $self->musicDefinitions()->filename( $filename ) ;
-    $self->musicDefinitions()->include( Includes->new($filename) ) ;
+    my ( $self, $filename, @betweenSections ) = @_ ;
+    $self->musicDefinitions()->functionsFilename( $filename ) ;
+    $self->musicDefinitions()->functionsInclude( Includes->new($filename) ) ;
     (@betweenSections) = ( @betweenSections ) ? (@betweenSections) : ( '\bar "||"' ) ;
 
     my $score ;
-    my (@scores) = $self->scores() ; 
+    my $scoresRef = $self->scores() ; 
+    my @scores = @$scoresRef ; 
     foreach $score (@scores) {
         $self->musicDefinitions()->pushFunction( $score->createConstructorFunction(@betweenSections) )
     }
@@ -139,26 +164,31 @@ sub writeMusicDefinitionsFiles {
     my ( $self, $musicDir ) = @_ ; 
 
     my $staffGroup ; 
-    my (@staffGroups) = $self->getStaffGroups() ; 
+    my $staffGroupsRef = $self->getStaffGroups() ; 
+    my @staffGroups = @$staffGroupsRef ; 
     my $staffGroupName ; 
     my $filename ; 
     my $fh ; 
     my $score ; 
-    my (@scores) = $self->scores() ; 
+    my $scoresRef = $self->scores() ; 
+    my @scores = @$scoresRef ; 
+    my @lilypond ; 
     foreach $staffGroup (@staffGroups) {
         $staffGroupName = $staffGroup->name() ; 
         $filename = 'music/' . $staffGroupName . '.ly' ; 
         open( $fh, '>', $filename ) or 
             die "Could not open music definitions file '$filename': " . $! ;  
-        print( $fh, 
+        print "$filename\n" ; 
+        (@lilypond) = ( 
             $self->version(), 
-            $self->definitionsInclude()->render() 
+            $self->musicDefinitions()->functionsInclude()->render()
         ) ;
         foreach $score (@scores) {
-            print( $fh, $score->createMusicDefinitions( $staffGroupName ) ) ; 
-            print( $fh, $score->createChordDefinitions( $staffGroupName ) ) ; 
+            push( @lilypond, $score->createMusicDefinitions($staffGroupName) ) ; 
+            push( @lilypond, $score->createChordDefinitions($staffGroupName) ) ; 
         }
-        close( $fh ) ; 
+        print $fh join("\n", @lilypond) ; 
+        close $fh ; 
         $self->musicDefinitions()->pushStaffGroupIncludes( "../$filename" ) ; 
     }
     return $self->musicDefinitions()->staffGroupIncludes() ; 
@@ -171,11 +201,14 @@ sub writeMusicDefinitionsFiles {
 sub getStaffGroups {
     my $self = shift ; 
     my $scoreName = shift ; 
-    my @scores = $self->scores() ; 
+    my $scoresRef = $self->scores() ; 
+    my @scores = @$scoresRef ; 
     unless ( $scoreName ) {
         $scoreName = $scores[0]->name() ; 
     }
-    return $self->scores($scoreName)->staffGroups() ; 
+    my @theseScores = $self->getScores($scoreName) ; 
+    my $thisScore = $theseScores[0] ; 
+    return $thisScore->staffGroups() ; 
 }
 
 #
@@ -184,7 +217,8 @@ sub getStaffGroups {
 sub sequenceMeasureNumbers {
     my $self = shift ; 
     my $score ; 
-    my (@scores) = $self->scores() ; 
+    my $scoresRef = $self->scores() ; 
+    my @scores = $scoresRef ; 
     my $lastBarNumber = 0 ; 
     foreach $score (@scores) {
         $score->startingBarNumber( $lastBarNumber + 1 ) ;
@@ -203,7 +237,8 @@ sub instruments {
     my $self = shift ; 
     my $scoreName = shift ; 
     my $score ; 
-    my (@scores) = $self->scores() ; 
+    my $scoresRef = $self->scores() ; 
+    my @scores = @scoresRef ; 
     foreach $score (@scores) {
         unless ( $scoreName ) { 
             return $score->instruments() ; 
@@ -224,9 +259,9 @@ sub parts {
     my (@instruments) = $self->instruments() ; 
     my @parts ;     
     foreach $instrument (@instruments) {
-        push( @parts, $self->part( $instrument->name() ) ; 
+        push( @parts, $self->part( $instrument->name() ) ); 
     }
-    return $self->parts{ \@parts } ;
+    return $self->parts( \@parts ) ;
 }
 
 #
@@ -237,7 +272,8 @@ sub part {
     my $self = shift ; 
     my $instrumentName = shift ; 
     my $score ; 
-    my (@scores) = $self->scores() ; 
+    my $scoresRef = $self->scores() ; 
+    my @scores = $scoresRef ; 
     my $partScore ; 
     my @staffGroups ;
     my $staffGroup ; 
@@ -255,13 +291,13 @@ sub part {
             if ( @theseInstruments ) {
                 push( @instruments, @theseInstruments ) ; 
             }
-            $partStaffGroup->instruments( \@instruments ) ) ;
+            $partStaffGroup->instruments( \@instruments ) ;
         }
         push( @partStaffGroups, $partStaffGroup ) ;
         $partScore->staffGroups( \@partStaffGroups ) ; 
         push( @partScores, $partScore ) ; 
     }
-    $part->scores( \@partScores ) ; 
+    $part->pushScores( @partScores ) ; 
     return $part ; 
 }
 
@@ -287,7 +323,8 @@ sub render {
 
     my $score ; 
     my $scoresRef = $self->scores() ; 
-    foreach $score (@$scoresRef) {
+    my @scores = @$scoresRef ; 
+    foreach $score ( @scores ) {
         push( @lilypond, $score->render( $indent, $self->transposed() ) ) ;
     }
 

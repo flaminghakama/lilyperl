@@ -7,7 +7,32 @@ sub new {
     my $self = shift ; 
     unless ( ref($self) eq 'HASH' ) { 
         $self = {
-            name = $self,
+            name => $self,
+            instrumentName => shift, 
+            shortInstrumentName => shift,
+            midiInstrument => shift,
+            clef => shift,
+            transposition => shift, 
+            staff => shift,
+            include => shift,
+            StaffGroup => shift 
+        } ; 
+    }
+    return bless $self, $class;
+}
+
+#
+#  Make a duplicate version of the object
+#  and update any specied properties.
+#
+sub clone {
+    my $self = shift ; 
+    my $properties = shift ; 
+
+
+    unless ( ref($self) eq 'HASH' ) { 
+        $self = {
+            name => $self,
             instrumentName => shift, 
             shortInstrumentName => shift,
             midiInstrument => shift,
@@ -18,6 +43,12 @@ sub new {
         } ; 
     }
     return bless $self, $class;
+}
+
+sub name {
+    my ( $self, $value ) = @_; 
+    $self->{name} = $value if defined $value ; 
+    return $self->{name};
 }
 
 sub instrumentName {
@@ -58,13 +89,15 @@ sub staff {
 
 sub createStaff {
     my $self = shift ; 
-    my $transposed = shift ; 
+    my $musicSuffix = shift ; 
+    my $transposed = shift ;
+    my $musicName = $self->name() . $musicSuffix ; 
     my $staff = Staff->new({
         'instrumentName'      => $self->instrumentName(),
         'shortInstrumentName' => $self->shortInstrumentName(),
         'midiInstrument'      => $self->midiInstrument(),
         'clef'                => $self->clef(),
-        'music'               => "\\" . $self->name()
+        'music'               => "\\" . $musicName 
     }) ; 
     if ( $transposed && $self->transposition() ) {
         $staff->musicTransposeFrom( 'c' ) ; 
@@ -77,6 +110,12 @@ sub include {
     my ( $self, $value ) = @_; 
     $self->{include} = $value if defined $value ; 
     return $self->{include};
+}
+
+sub staffGroup {
+    my ( $self, $value ) = @_; 
+    $self->{staffGroup} = $value if defined $value ; 
+    return $self->{staffGroup};
 }
 
 package DrumInstrument ; 

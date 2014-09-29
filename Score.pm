@@ -1,12 +1,15 @@
 package Score ;
-use staffGroup ;  
+use StaffGroup ;  
+use Section ; 
 use Layout ; 
 use parent 'Clone';
 
 sub new {
     my $class = shift;
     my $self = shift ; 
+    my @sections ; 
     my @constructorFunction ;   
+    my @lilypond ; 
     unless ( ref($self) eq 'HASH' ) { 
         $self = {
             name => $self,
@@ -18,13 +21,33 @@ sub new {
             staffGroups => shift,
             layout => shift,
             constructorFunction => shift,
-            instruments => shift ; 
+            instruments => shift, 
+            lilypond => shift 
         } ; 
+    }
+    unless ( $self->{sections} ) { 
+        $self->{sections} = \@sections ; 
     }
     unless ( $self->{constructorFunction} ) { 
         $self->{constructorFunction} = \@constructorFunction ; 
     }
+    unless ( $self->{lilypond} ) { 
+        $self->{lilypond} = \@lilypond ; 
+    }
     return bless $self, $class;
+}
+
+sub clone {
+    my $self = shift;
+    my $copy;
+    foreach my $key (keys %$self) {
+        if(ref $self->{$key}) {
+            $copy->{$key} = $self->{$key}->clone(); 
+        } else {
+            $copy->{$key} = $self->{$key};
+        }
+    }
+    bless $copy, ref $self;
 }
 
 sub name {
@@ -37,6 +60,19 @@ sub sections {
     my ( $self, $value ) = @_; 
     $self->{sections} = $value if defined $value ; 
     return $self->{sections};
+}
+
+#
+#  Add one or more sections to the score's list of sections.
+#
+sub addSection {
+    my ( $self, @newSections ) = @_; 
+    if ( @newSections ) {
+        my (@sections) = $self->sections() ;  
+        push( @sections, @newSections ) ; 
+        $self->{sections} = \@sections ; 
+    }
+    return $self->{sections} ; 
 }
 
 sub header {
@@ -69,6 +105,37 @@ sub staffGroups {
     return $self->{staffGroups};
 }
 
+#
+#  Get all staff groups with the specified staff group name
+#  If no staff group name is specified, get the first staff group.
+#  Returns a reference to the list of selected staff groups
+#
+sub getStaffGroups {
+    my ( $self, $staffGroupName ) = @_; 
+    my $staffGroupsRef = $self->staffGroups() ; 
+    my @staffGroups = @$staffGroupsRef ; 
+    my $staffGroup ; 
+    my @theseStaffGroups ; 
+    foreach $staffGroup ( @staffGroups ) { 
+        unless ( $staffGroupName ) {
+            push( @theseStaffGroups, $staffGroup ) ; 
+            last ; 
+        } else {
+            if ( $staffGroup->name() eq $staffGroupName ) {
+                push( @theseStaffGroups, $staffGroup ) ; 
+            }
+        }
+    } 
+    return \@theseStaffGroups ; 
+}
+
+sub pushStaffGroups {
+    my ( $self, @newStaffGroups ) = @_; 
+    my $staffGroupsRef = $self->staffGroups() ; 
+    my @staffGroups = ( @$staffGroupsRef, @newStaffGroups ) ; 
+    return $self->staffGroups( \@staffGroups );
+}
+
 sub layout {
     my ( $self, $value ) = @_; 
     $self->{layout} = $value if defined $value ; 
@@ -78,8 +145,9 @@ sub layout {
 sub listSectionNames {
     my $self = shift ;
     my $section ; 
-    my (@sections) = $self->sections() ; 
-    my @sectionNames = () ; 
+    my $sectionsRef = $self->sections() ; 
+    my (@sections) = @$sectionsRef ; 
+    my @sectionNames ; 
     foreach $section (@sections) {
         push( @sectionNames, $section->name() ) ;
     }
@@ -89,7 +157,8 @@ sub listSectionNames {
 sub howManyMeasures {
     my $self = shift ;
     my $section ; 
-    my (@sections) = $self->sections() ; 
+    my $sectionsRef = $self->sections() ; 
+    my (@sections) = @$sectionsRef ; 
     my $howManyMeasures = 0 ;
     foreach $section (@sections) {
         $howManyMeasures += $section->howManyMeasures() ; 
@@ -107,7 +176,8 @@ sub constructorFunction {
     if ( ref($value) eq 'ARRAY' ) {
         $self->{constructorFunction} = $value  ; 
     } else {
-        my (@constructorFunction) = $self->{constructorFunction} ;
+        my $constructorFunctionRef = $self->{constructorFunction} ; 
+        my (@constructorFunction) = @$constructorFunctionRef ; 
         if ( $value ) { push( @constructorFunction, $value ) ; } 
         if ( @lines ) { push( @constructorFunction, @lines ) ; } 
         $self->{constructorFunction} = \@constructorFunction ; 
@@ -116,12 +186,12 @@ sub constructorFunction {
 }
 
 sub conditionalPush {
-    my ( $self, $arrayRef, $value, $commandBegin, $commandEnd ) = @_ ; 
-    my (@lilypond) = $arrayRef ; 
+    my ( $self, $arrayRef, $value, $commandBegin, $commandEnd ) = @_ ;
+    my @lilypond = @$arrayRef ; 
     if ( $value ) {
-        push( @lilypond, $commandBegin . $value . $commandEnd) ; }
+        push( @lilypond, $commandBegin . $value . $commandEnd) ; 
     }
-    return \@lilypond ; 
+    return \@lilypond  ; 
 }
 
 #
@@ -133,7 +203,8 @@ sub conditionalPush {
 #
 sub pushConstructorIf {
     my ( $self, $value, $commandBegin, $commandEnd ) = @_ ; 
-    my (@constructorFunction) = $self->constructorFunction() ; 
+    my $constructorFunctionRef = $self->constructorFunction() ;  
+    my (@constructorFunction) = @$constructorFunctionRef ; 
     $self->constructorFunction( $self->conditionalPush( \@constructorFunction, $value, $commandBegin, $commandEnd ) ) ; 
 }
 
@@ -143,7 +214,7 @@ sub pushConstructorIf {
 #
 sub createConstructorFunction {
 
-    my ( $self, @barlines ) = shift ; 
+    my ( $self, @barlines ) = @_ ; 
 
     my $indent = '    ' ;
     my (@sectionNames) = $self->listSectionNames() ; 
@@ -152,7 +223,7 @@ sub createConstructorFunction {
     $self->constructorFunction( 
         'rehearsalMarks' . $self->name() . ' = #(define-music-function', 
         $indent . '(parser location   ' . join( " ", @sectionNames ) . ' )',
-        $indent . '                 ( ' . $argumentTypeList . ' )',    
+        $indent . '                 (' . $argumentTypeList . ' )',    
         $indent . '#{'
     ) ;  
 
@@ -160,13 +231,14 @@ sub createConstructorFunction {
     $self->pushConstructorIf( $indent . "\\override MultiMeasureRest #'expand-limit = #2" ) ;
     $self->pushConstructorIf( $indent . "\\override Staff.TimeSignature   #'style = #'numbered" ) ; 
 
-    my (@sections) = $self->sections() ;
+    my $sectionsRef = $self->sections() ;
+    my (@sections) = @$sectionsRef ; 
     my $section ;
     foreach $section (@sections) {
-        $self->pushConstructorIf( $section->key(), $indent . '\key ' )
+        $self->pushConstructorIf( $section->key(), $indent . '\key ' ) ;
         $self->pushConstructorIf( $section->tempo(), $indent . '\tempo ' ) ; 
         $self->pushConstructorIf( $section->timeSignature(), $indent . '\time ' ) ; 
-        $self->pushConstructorIf( $section->rehearsal(), $indent . '\mark \markup { \box ',  ' }' ) ; 
+        $self->pushConstructorIf( $section->displayName(), $indent . '\mark \markup { \box ',  ' }' ) ; 
         $self->constructorFunction( $indent . '$' . $section->name() ) ;  
         foreach ( @barlines ) {
             $self->pushConstructorIf( $indent . $_ ) ; 
@@ -187,24 +259,31 @@ sub createMusicDefinitions {
     my $self = shift ; 
     my $staffGroupName = shift ; 
     my $indent = '    ' ;
-    my @staffGroups = ( $staffGroupName ) ? ( $self->staffGroups ) $self->staffGroups() ; 
+    my $staffGroupsRef = $self->getStaffGroups($staffGroupName) ; 
+    my @staffGroups = @$staffGroupsRef ; 
+    my $instrumentsRef ; 
     my @instruments ; 
     my $instrument ; 
     my @functionInvocations ;
+    my $staff ; 
     my $section ; 
-    my (@sections) = $self->sections() ;
+    my $sectionsRef = $self->sections() ;
+    my @sections = @$sectionsRef ;
     my $sectionName ; 
     my @musicDefinitions ;
     foreach $staffGroup (@staffGroups) {
      
-        unless ( $staffGroupName && ($staffGroupName neq $staffGroup->name()) ) { 
+        unless ( $staffGroupName && ($staffGroupName ne $staffGroup->name()) ) { 
 
-            (@instruments) = $staffGroup->instruments() ; 
-            foreach $instrument (@instruments) {
+            $instrumentsRef = $staffGroup->instruments() ; 
+            @instruments = @$instrumentsRef ; 
+            foreach $instrument ( @instruments ) {
 
-                push( @functionInvocations, $instrument->name() . $self->name() . ' = \rehearsalMarks' . $self->name() ) ;
+                my $musicName = $instrument->name() . $self->name() ; 
+                push( @functionInvocations, $musicName . ' = \rehearsalMarks' . $self->name() ) ;
 
-                foreach $section (@sections) {
+                $staff = $instrument->createStaff( $musicName ) ; 
+                foreach $section ( @sections ) {
                     $sectionName = $instrument->name() . $self->name() . $section->name() ;
                     push( @functionInvocations, $indent . '{ ' . $staff->reverseTransposeMusic( "\\$sectionName" ) . ' }' ) ;  
                     push( @musicDefinitions, 
@@ -226,7 +305,8 @@ sub createChordDefinitions {
     my $self = shift ; 
     my $indent = '    ' ;
     my $section ; 
-    my (@sections) = $self->sections() ;
+    my $sectionsRef = $self->sections() ;
+    my @sections = @$sectionsRef ;
     my $sectionName ;
     my @chordDefinitions ;
     foreach $section (@sections) {
@@ -279,6 +359,39 @@ sub getInstrument {
     return @instrument ; 
 }
 
+sub lilypond {
+    my ( $self, $value ) = @_; 
+    $self->{lilypond} = $value if defined $value ; 
+    return $self->{lilypond};
+}
+
+sub lilypush {
+    my ( $self, @lines ) = @_ ; 
+    my $line ; 
+    my $lilypondRef = $self->lilypond() ; 
+    my @lilypond = @$lilypondRef ; 
+    foreach $line ( @lines ) { 
+        if ( ref($line) eq 'ARRAY' ) { 
+            push( @lilypond, @$line ) ;
+        } else { 
+            push( @lilypond, $line ) ; 
+        }
+    }
+    $self->{lilypond} = \@lilypond ;
+    return $self->{lilypond} ; 
+}
+
+sub conditionalLily {
+    my ( $self, $value, $before, $after ) = @_ ; 
+    if ( $value ) { 
+        my $lilypondRef = $self->lilypond() ; 
+        my @lilypond = @$lilypondRef ; 
+        push( @lilypond, $before . $value . $after ) ; 
+        $self->{lilypond} = \@lilypond ;
+    }
+    return $self->{lilypond} ; 
+}
+
 sub render {
     my $self = shift ; 
     my $margin = shift ; 
@@ -286,30 +399,35 @@ sub render {
     my $transposed = shift ; 
 
     my @lilypond ;
-    $self->lilypond( \@lilypond ) ;  
-    $self->lilypush( $self->header()->title(), "$margin%%%%%%% ", " %%%%%%%" ) ; 
+    $self->lilypond( \@lilypond ) ;
+    if ( $self->header() ) {
+        $self->conditionalLily( $self->header()->title(), "$margin%%%%%%% ", " %%%%%%%" ) ;
+    } 
     $self->lilypush( "$margin\\score <<" ) ; 
 
-    $self->lilypush( $self->startingBarNumber(), "$indent\\set Score.currentBarNumber = #" ) ; 
-    $self->lilypush( $self->barNumberVisibility(), "$indent\\override Score.BarNumber #'break-visibility = #'#(", ")" ) ; 
-    $self->lilypush( $self->doubleRepeatType(), "$indent\\set Score.doubleRepeatType = #\"", '"' ) ; 
+    $self->conditionalLily( $self->startingBarNumber(), "$indent\\set Score.currentBarNumber = #" ) ; 
+    $self->conditionalLily( $self->barNumberVisibility(), "$indent\\override Score.BarNumber #'break-visibility = #'#(", ")" ) ; 
+    $self->conditionalLily( $self->doubleRepeatType(), "$indent\\set Score.doubleRepeatType = #\"", '"' ) ; 
 
     my $staffGroup ; 
     my $staffGroupsRef = $self->staffGroups() ; 
-    foreach $staffGroup (@$staffGroupsRef) {
-        $self->lilypush( $staffGroup->render( $indent, $transposed ) ) ; 
+    my @staffGroups = @$staffGroupsRef ; 
+    foreach $staffGroup ( @staffGroups ) {
+        $self->lilypush( $staffGroup->render( $indent, $self->name(), $transposed ) ) ; 
     }
     $self->lilypush( "$margin>>" ) ; 
 
     if ( $self->header() ) { 
-        $self->lilypond(
+        $self->lilypush(
             "$margin\\header {", 
             $self->header()->render($margin), 
             "$margin}"                  
         ) ;  
     }
-    $self->lilypond( $self->layout()->render($margin) ) ;
-    return $self->lilypond() ; 
+    if ( $self->layout() ) {
+        $self->lilypush( $self->layout()->render($margin) ) ;
+    }
+    return @{ $self->lilypond() } ; 
 }
 
 1 ;

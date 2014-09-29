@@ -6,11 +6,11 @@ use Roman;
 use parent 'Clone';
 
 use Book ;
-
-my %book ; 
+use PageDefaults ; 
+use Chart ; 
 
 my $includes = Includes->new ( 
-	'english.ly'
+    'english.ly'
 ) ; 
 
 my $header = Header->new ({  
@@ -27,7 +27,7 @@ my $header = Header->new ({
 #
 #  Define $partPaper and $scorePaper
 #
-use Page ; 
+my %page = %PageDefaults::page ; 
 $page{'part'}->pagination()->titleSplitLeft('As It') ; 
 $page{'part'}->pagination()->titleSplitRight('Is') ; 
 $page{'score'}->pagination()->titleSplitLeft('As It') ; 
@@ -36,6 +36,8 @@ $page{'score'}->pagination()->titleSplitRight('Is') ;
 $page{'part'}->fonts()->main('Agatha') ; 
 $page{'score'}->fonts()->main('Agatha') ; 
 
+my %paper = %PageDefaults::paper ; 
+my $layout = $PageDefaults::layout ; 
 
 ###################################
 #    SCORES AND SCORE SECTIONS    #
@@ -56,202 +58,240 @@ my @scoreNames = (
 );
 
 my %sections ; 
-my $sections{'Intro'} = ()
-    Section->new({
-        'name'            => 'Fanfare',
-        'displayName'     => 'Fanfare',
-        'key'             => 'e \minor',
-        'tempo'           => '\tempo "Afro-Latin " 2=104',
-        'timeSignature'   => "\\time 2/2" 
-        'howManyMeasures' => 12,
-        'defaultMusic'    => 'R1 * 12',
-        'defaultChords'   => 'R1 * 12'
-    }),
-    Section->new({
-        'name'            => 'Buildup',
-        'displayName'     => 'Buildup',
-        'howManyMeasures' => 16,
-        'defaultMusic'    => 'R1 * 16',
-        'defaultChords'   => 'e1:m e:m e:m e:m   e:m e:m e:m e:m   e:m e:m e:m e:m   e:m e:m e:m e:m'
-    }) 
-);
 
-$sections{'FirstSolo'} = (
-    Section->new({
-        'name'            => 'ChorusI',
-        'displayName'     => 'Solo',
-        'howManyMeasures' => 16,
-        'defaultMusic'    => 'R1 * 16',
-        'defaultChords'   => 'e1:m e:m e:m e:m   e:m e:m e:m e:m   e:m e:m e:m e:m   e:m e:m e:m e:m'
-    }),
-    Section->new({
-        'name       '     => 'ChorusII',
-        'displayName'     => '(add Trb.)',
-        'howManyMeasures' => 16,
-        'defaultMusic'    => 'R1 * 16', 
-        'defaultChords'   => 'e1:m e:m e:m e:m   e:m e:m e:m e:m   e:m e:m e:m e:m   e:m e:m e:m e:m'
-    }),
-    Section->new({
-        'name'            => 'ChorusIII',
-        'displayName'     => '(add Trp.)',
-        'howManyMeasures' => 16,
-        'defaultMusic'    => 'R1 * 16',
-        'defaultChords'   => 'e1:m e:m e:m e:m   e:m e:m e:m e:m   e:m e:m e:m e:m   e:m e:m e:m e:m'
-    }),
-    Section->new({
-        'name'            => 'ChorusIV',
-        'displayName'     => '(add Sax)',
-        'howManyMeasures' => 16,
-        'defaultMusic'    => 'R1 * 16',
-        'defaultChords'   => 'e1:m e:m e:m e:m   e:m e:m e:m e:m   e:m e:m e:m e:m   e:m e:m e:m e:m'
-    }),
-) ;
+my $section = Section->new({
+    'name'            => 'Fanfare',
+    'displayName'     => 'Fanfare',
+    'key'             => 'e \minor',
+    'tempo'           => '\tempo "Afro-Latin " 2=104',
+    'timeSignature'   => "\\time 2/2",
+    'howManyMeasures' => 12,
+    'defaultMusic'    => 'R1 * 12',
+    'defaultChords'   => 'R1 * 12'
+}) ; 
+push( @{$sections{'Intro'}}, $section ) ; 
 
-$sections{'HeadIn'} = (
-    Section->new({
-        'name'            => 'Fanfare',
-        'displayName'     => 'Fanfare',
-        'howManyMeasures' => 16,
-        'defaultMusic'    => 'R1 * 16',
-        'defaultChords'   => 'R1 * 16'
-    }),
-    Section->new({
-        'name'            => 'HeadI',
-        'displayName'     => 'Head',
-        'howManyMeasures' => 16,
-        'defaultMusic'    => 'R1 * 16',
-        'defaultChords'   => 'e1:m e:m e:m e:m',
-    }),
-    Section->new({
-        'name'            => 'HeadII',
-        'displayName'     => '',
-        'howManyMeasures' => 16,
-        'defaultMusic'    => 'R1 * 16',
-        'defaultChords'   => 'e1:m e:m e:m e:m',
-    })
-) ;  
+$section = Section->new({
+    'name'            => 'Buildup',
+    'displayName'     => 'Buildup',
+    'howManyMeasures' => 16,
+    'defaultMusic'    => 'R1 * 16',
+    'defaultChords'   => 'e1:m e:m e:m e:m   e:m e:m e:m e:m   e:m e:m e:m e:m   e:m e:m e:m e:m'
+}) ;
+push( @{$sections{'Intro'}}, $section ) ; 
 
-$sections{'SecondSolo'} = (
-    Section->new({
-        'name'            => 'ChorusI',
-        'displayName'     => 'Solo',
-        'howManyMeasures' => 16,
-        'defaultMusic'    => 'R1 * 16',
-        'defaultChords'   => 'e1:m e:m e:m e:m',
-    }),
-    Section->new({
-        'name'            => 'ChorusII',
-        'displayName'     => '(add I)',
-        'howManyMeasures' => 16,
-        'defaultMusic'    => 'R1 * 16',
-        'defaultChords'   => 'e1:m e:m e:m e:m',
-    }),
-    Section->new({
-        'name'            => 'ChorusIII',
-        'displayName'     => '(add II)',
-        'howManyMeasures' => 16,
-        'defaultMusic'    => 'R1 * 16',
-        'defaultChords'   => 'e1:m e:m e:m e:m',
-    }),
-    Section->new({
-        'name'            => 'ChorusIV',
-        'displayName'     => '(add III)',
-        'howManyMeasures' => 16,
-        'defaultMusic'    => 'R1 * 16',
-        'defaultChords'   => 'e1:m e:m e:m e:m',
-    }),
-    Section->new({
-        'name'            => 'HeadIII',
-        'displayName'     => 'Head',
-        'howManyMeasures' => 16,
-        'defaultMusic'    => 'R1 * 16',
-        'defaultChords'   => 'e1:m e:m e:m e:m',
-    }),
-    Section->new({
-        'name'            => 'HeadIV',
-        'displayName'     => '',
-        'howManyMeasures' => 16,
-        'defaultMusic'    => 'R1 * 16',
-        'defaultChords'   => 'e1:m e:m e:m e:m',
-    })
-) ;
+
+$section = Section->new({
+    'name'            => 'ChorusI',
+    'displayName'     => 'Solo',
+    'howManyMeasures' => 16,
+    'defaultMusic'    => 'R1 * 16',
+    'defaultChords'   => 'e1:m e:m e:m e:m   e:m e:m e:m e:m   e:m e:m e:m e:m   e:m e:m e:m e:m'
+}) ; 
+push( @{$sections{'FirstSolo'}}, $section ) ; 
+
+$section = Section->new({
+    'name'            => 'ChorusII',
+    'displayName'     => '(add Trb.)',
+    'howManyMeasures' => 16,
+    'defaultMusic'    => 'R1 * 16', 
+    'defaultChords'   => 'e1:m e:m e:m e:m   e:m e:m e:m e:m   e:m e:m e:m e:m   e:m e:m e:m e:m'
+}) ; 
+push( @{$sections{'FirstSolo'}}, $section ) ; 
+
+$section = Section->new({
+    'name'            => 'ChorusIII',
+    'displayName'     => '(add Trp.)',
+    'howManyMeasures' => 16,
+    'defaultMusic'    => 'R1 * 16',
+    'defaultChords'   => 'e1:m e:m e:m e:m   e:m e:m e:m e:m   e:m e:m e:m e:m   e:m e:m e:m e:m'
+}) ; 
+push( @{$sections{'FirstSolo'}}, $section ) ; 
+
+$section = Section->new({
+    'name'            => 'ChorusIV',
+    'displayName'     => '(add Sax)',
+    'howManyMeasures' => 16,
+    'defaultMusic'    => 'R1 * 16',
+    'defaultChords'   => 'e1:m e:m e:m e:m   e:m e:m e:m e:m   e:m e:m e:m e:m   e:m e:m e:m e:m'
+}) ; 
+push( @{$sections{'FirstSolo'}}, $section ) ; 
+
+
+$section = Section->new({
+    'name'            => 'Fanfare',
+    'displayName'     => 'Fanfare',
+    'howManyMeasures' => 16,
+    'defaultMusic'    => 'R1 * 16',
+    'defaultChords'   => 'R1 * 16'
+}) ; 
+push( @{$sections{'HeadIn'}}, $section ) ; 
+
+$section = Section->new({
+    'name'            => 'HeadI',
+    'displayName'     => 'Head',
+    'howManyMeasures' => 16,
+    'defaultMusic'    => 'R1 * 16',
+    'defaultChords'   => 'e1:m e:m e:m e:m',
+}) ; 
+push( @{$sections{'HeadIn'}}, $section ) ; 
+
+$section = Section->new({
+    'name'            => 'HeadII',
+    'displayName'     => '',
+    'howManyMeasures' => 16,
+    'defaultMusic'    => 'R1 * 16',
+    'defaultChords'   => 'e1:m e:m e:m e:m',
+}) ; 
+push( @{$sections{'HeadIn'}}, $section ) ; 
+
+
+
+$section = Section->new({
+    'name'            => 'ChorusI',
+    'displayName'     => 'Solo',
+    'howManyMeasures' => 16,
+    'defaultMusic'    => 'R1 * 16',
+    'defaultChords'   => 'e1:m e:m e:m e:m',
+}) ; 
+push( @{$sections{'SecondSolo'}}, $section ) ; 
+
+$section = Section->new({
+    'name'            => 'ChorusII',
+    'displayName'     => '(add I)',
+    'howManyMeasures' => 16,
+    'defaultMusic'    => 'R1 * 16',
+    'defaultChords'   => 'e1:m e:m e:m e:m',
+}) ; 
+push( @{$sections{'SecondSolo'}}, $section ) ; 
+
+$section = Section->new({
+    'name'            => 'ChorusIII',
+    'displayName'     => '(add II)',
+    'howManyMeasures' => 16,
+    'defaultMusic'    => 'R1 * 16',
+    'defaultChords'   => 'e1:m e:m e:m e:m',
+}) ; 
+push( @{$sections{'SecondSolo'}}, $section ) ; 
+
+$section = Section->new({
+    'name'            => 'ChorusIV',
+    'displayName'     => '(add III)',
+    'howManyMeasures' => 16,
+    'defaultMusic'    => 'R1 * 16',
+    'defaultChords'   => 'e1:m e:m e:m e:m',
+}) ; 
+push( @{$sections{'SecondSolo'}}, $section ) ; 
+
+$section = Section->new({
+    'name'            => 'HeadIII',
+    'displayName'     => 'Head',
+    'howManyMeasures' => 16,
+    'defaultMusic'    => 'R1 * 16',
+    'defaultChords'   => 'e1:m e:m e:m e:m',
+}) ; 
+push( @{$sections{'SecondSolo'}}, $section ) ; 
+
+$section = Section->new({
+    'name'            => 'HeadIV',
+    'displayName'     => '',
+    'howManyMeasures' => 16,
+    'defaultMusic'    => 'R1 * 16',
+    'defaultChords'   => 'e1:m e:m e:m e:m',
+}) ; 
+push( @{$sections{'SecondSolo'}}, $section ) ; 
   
-$sections{'ThirdSolo'} = (
-    Section->new({
-        'name'            => 'ChorusI',
-        'displayName'     => 'Solo',
-        'howManyMeasures' => 16,
-        'defaultMusic'    => 'R1 * 16',
-        'defaultChords'   => 'e1:m e:m e:m e:m',
-    }),
-    Section->new({
-        'name'            => 'ChorusII',
-        'displayName'     => '(add I)',
-        'howManyMeasures' => 16,
-        'defaultMusic'    => 'R1 * 16',
-        'defaultChords'   => 'e1:m e:m e:m e:m',
-    }),
-    Section->new({
-        'name'            => 'ChorusIII',
-        'displayName'     => '(add II)',
-        'howManyMeasures' => 16,
-        'defaultMusic'    => 'R1 * 16',
-        'defaultChords'   => 'e1:m e:m e:m e:m',
-    }),
-    Section->new({
-        'name'            => 'ChorusIV',
-        'displayName'     => '(add III)',
-        'howManyMeasures' => 16,
-        'defaultMusic'    => 'R1 * 16',
-        'defaultChords'   => 'e1:m e:m e:m e:m',
-    }),
-    Section->new({
-        'name'            => 'ChorusIVEnding',
-        'displayName'     => '',
-        'howManyMeasures' => 1,
-        'defaultMusic'    => 'R1 * 16',
-        'defaultChords'   => 'e1:m e:m e:m e:m',
-    })
-) ;
 
-$sections{'HeadOut'} = (
-    Section->new({
-        'name'            => 'LastEnding',
-        'displayName'     => '',
-        'howManyMeasures' => 16,
-        'defaultMusic'    => 'R1 * 16',
-        'defaultChords'   => 'e1:m e:m e:m e:m',
-    }),
-    Section->new({
-        'name'            => 'Fanfare',
-        'displayName'     => 'Fanfare',
-        'howManyMeasures' => 16,
-        'defaultMusic'    => 'R1 * 16',
-        'defaultChords'   => 'e1:m e:m e:m e:m',
-    }),
-    Section->new({
-        'name'            => 'HeadV',
-        'displayName'     => 'Head',
-        'howManyMeasures' => 16,
-        'defaultMusic'    => 'R1 * 16',
-        'defaultChords'   => 'e1:m e:m e:m e:m',
-    }),
-    Section->new({
-        'name'            => 'HeadVI',
-        'displayName'     => '',
-        'howManyMeasures' => 16,
-        'defaultMusic'    => 'R1 * 16',
-        'defaultChords'   => 'e1:m e:m e:m e:m',
-    }),
-     Section->new({
-        'name'            => 'Coda',
-        'displayName'     => '',
-        'howManyMeasures' => 16,
-        'defaultMusic'    => 'R1 * 16',
-        'defaultChords'   => 'e1:m e:m e:m e:m',
-    })
-) ;
- 
+$section = Section->new({
+    'name'            => 'ChorusI',
+    'displayName'     => 'Solo',
+    'howManyMeasures' => 16,
+    'defaultMusic'    => 'R1 * 16',
+    'defaultChords'   => 'e1:m e:m e:m e:m',
+}) ; 
+push( @{$sections{'ThirdSolo'}}, $section ) ; 
+
+$section = Section->new({
+    'name'            => 'ChorusII',
+    'displayName'     => '(add I)',
+    'howManyMeasures' => 16,
+    'defaultMusic'    => 'R1 * 16',
+    'defaultChords'   => 'e1:m e:m e:m e:m',
+}) ; 
+push( @{$sections{'ThirdSolo'}}, $section ) ; 
+
+$section = Section->new({
+    'name'            => 'ChorusIII',
+    'displayName'     => '(add II)',
+    'howManyMeasures' => 16,
+    'defaultMusic'    => 'R1 * 16',
+    'defaultChords'   => 'e1:m e:m e:m e:m',
+}) ; 
+push( @{$sections{'ThirdSolo'}}, $section ) ; 
+
+$section = Section->new({
+    'name'            => 'ChorusIV',
+    'displayName'     => '(add III)',
+    'howManyMeasures' => 16,
+    'defaultMusic'    => 'R1 * 16',
+    'defaultChords'   => 'e1:m e:m e:m e:m',
+}) ; 
+push( @{$sections{'ThirdSolo'}}, $section ) ; 
+
+$section = Section->new({
+    'name'            => 'ChorusIVEnding',
+    'displayName'     => '',
+    'howManyMeasures' => 1,
+    'defaultMusic'    => 'R1 * 16',
+    'defaultChords'   => 'e1:m e:m e:m e:m',
+}) ; 
+push( @{$sections{'ThirdSolo'}}, $section ) ; 
+
+
+$section = Section->new({
+    'name'            => 'LastEnding',
+    'displayName'     => '',
+    'howManyMeasures' => 16,
+    'defaultMusic'    => 'R1 * 16',
+    'defaultChords'   => 'e1:m e:m e:m e:m',
+}) ; 
+push( @{$sections{'HeadOut'}}, $section ) ; 
+
+$section = Section->new({
+    'name'            => 'Fanfare',
+    'displayName'     => 'Fanfare',
+    'howManyMeasures' => 16,
+    'defaultMusic'    => 'R1 * 16',
+    'defaultChords'   => 'e1:m e:m e:m e:m',
+}) ; 
+push( @{$sections{'HeadOut'}}, $section ) ; 
+
+$section = Section->new({
+    'name'            => 'HeadV',
+    'displayName'     => 'Head',
+    'howManyMeasures' => 16,
+    'defaultMusic'    => 'R1 * 16',
+    'defaultChords'   => 'e1:m e:m e:m e:m',
+}) ; 
+push( @{$sections{'HeadOut'}}, $section ) ; 
+
+$section = Section->new({
+    'name'            => 'HeadVI',
+    'displayName'     => '',
+    'howManyMeasures' => 16,
+    'defaultMusic'    => 'R1 * 16',
+    'defaultChords'   => 'e1:m e:m e:m e:m',
+}) ; 
+push( @{$sections{'HeadOut'}}, $section ) ; 
+
+ $section = Section->new({
+    'name'            => 'Coda',
+    'displayName'     => '',
+    'howManyMeasures' => 16,
+    'defaultMusic'    => 'R1 * 16',
+    'defaultChords'   => 'e1:m e:m e:m e:m',
+}) ; 
+push( @{$sections{'HeadOut'}}, $section ) ; 
 
 
 #
@@ -261,20 +301,20 @@ $sections{'HeadOut'} = (
 #      For each score
 #          Create function definition with score sections as parameters
 #
-my @scoreSections ; 
+my $scoreName ; 
 my @functions ; 
 my $lastBarNumber = 0 ; 
 foreach $scoreName (@scoreNames) {
 
-    (@scoreSections) = $scoreSections{$scoreName} ; 
-
     my $score = Score->new({
        'name'                 => $scoreName,
-       'sections'             => \@scoreSections,
+       'sections'             => $sections{$scoreName},
+       'layout'               => $layout
     }) ;
     $score->startingBarNumber( $lastBarNumber + 1 ) ;
     push( @scores, $score ) ; 
-    push( @functions, $score->createRehearsalMarksFunction( '\bar "||"' ) ) ; 
+    #my $constructorFunction = $score->createConstructorFunction( '\bar "||"' ) ; 
+    #push( @functions, $constructorFunction ) ; 
     $lastBarNumber += $score->howManyMeasures() ; 
 }
 
@@ -287,17 +327,18 @@ foreach $scoreName (@scoreNames) {
 #  Define @instrumentSections and %instrument
 #
 my @instrumentSections = (
-	'Woodwinds',
-	'Saxophones',
-	'Trumpets',
-	'Horns',
-	'Trombones',
-	'Rhythm'
+    'Woodwinds',
+    'Saxophones',
+    'Trumpets',
+    'Horns',
+    'Trombones',
+    'Rhythm'
 ) ;
 
-my %instrument ;
+my $instrument ; 
+my %instrumentSection ; 
 
-$instrument{'oboe'} = Instrument->new ({
+$instrument = Instrument->new ({
     'name'                => 'oboe',
     'instrumentName'      => 'Oboe',
     'shortInstrumentName' => 'Oboe',
@@ -305,11 +346,10 @@ $instrument{'oboe'} = Instrument->new ({
     'clef'                => 'treble',
     'transposition'       => 'c'
 }) ;
-$instrumentSection{'Woodwinds'} = ( 
-	$instrument{'oboe'} 
-) ;
+push( @{$instrumentSection{'Woodwinds'}}, $instrument ) ; 
 
-$instrument{'altoI'} = Instrument->new ({
+
+$instrument = Instrument->new ({
     'name'                => 'altoI',
     'instrumentName'      => 'Eb Alto Saxophone I',
     'shortInstrumentName' => 'Alto I',
@@ -317,7 +357,9 @@ $instrument{'altoI'} = Instrument->new ({
     'clef'                => 'treble',
     'transposition'       => 'ef'
 }) ;
-$instrument{'altoII'} = Instrument->new ({
+push( @{$instrumentSection{'Saxophones'}}, $instrument) ; 
+
+$instrument = Instrument->new ({
     'name'                => 'altoII',
     'instrumentName'      => 'Eb Alto Saxophone II',
     'shortInstrumentName' => 'Alto II',
@@ -325,7 +367,9 @@ $instrument{'altoII'} = Instrument->new ({
     'clef'                => 'treble',
     'transposition'       => 'ef'
 }) ;
-$instrument{'tenorI'} = Instrument->new ({
+push( @{$instrumentSection{'Saxophones'}}, $instrument) ; 
+
+$instrument = Instrument->new ({
     'name'                => 'tenorI',
     'instrumentName'      => 'Bb tenor Saxophone I',
     'shortInstrumentName' => 'Tenor I',
@@ -333,7 +377,9 @@ $instrument{'tenorI'} = Instrument->new ({
     'clef'                => 'treble',
     'transposition'       => 'bf'
 }) ;
-$instrument{'tenorII'} = Instrument->new ({
+push( @{$instrumentSection{'Saxophones'}}, $instrument) ; 
+
+$instrument = Instrument->new ({
     'name'                => 'tenorII',
     'instrumentName'      => 'Bb tenor Saxophone II',
     'shortInstrumentName' => 'Tenor II',
@@ -341,7 +387,9 @@ $instrument{'tenorII'} = Instrument->new ({
     'clef'                => 'treble',
     'transposition'       => 'bf'
 }) ;
-$instrument{'bari'} = Instrument->new ({
+push( @{$instrumentSection{'Saxophones'}}, $instrument) ; 
+
+$instrument = Instrument->new ({
     'name'                => 'bari',
     'instrumentName'      => 'Bb Baritone Saxophone',
     'shortInstrumentName' => 'Bari',
@@ -349,15 +397,10 @@ $instrument{'bari'} = Instrument->new ({
     'clef'                => 'treble',
     'transposition'       => 'ef'
 }) ;
-$instrumentSection{'Saxophones'} = ( 
-	$instrument{'altoI'}, 
-	$instrument{'altoII'}, 
-	$instrument{'tenorI'}, 
-	$instrument{'tenorII'}, 
-	$instrument{'bari'} 
-) ;
+push( @{$instrumentSection{'Saxophones'}}, $instrument) ; 
 
-$instrument{'trumpetI'} = Instrument->new ({
+
+$instrument = Instrument->new ({
     'name'                => 'trumpetI',
     'instrumentName'      => 'Bb Trumpet I',
     'shortInstrumentName' => 'Trp. I',
@@ -365,7 +408,9 @@ $instrument{'trumpetI'} = Instrument->new ({
     'clef'                => 'treble',
     'transposition'       => 'bf'
 }) ;
-$instrument{'trumpetII'} = Instrument->new ({
+push( @{$instrumentSection{'Trumpets'}}, $instrument) ; 
+
+$instrument = Instrument->new ({
     'name'                => 'trumpetII',
     'instrumentName'      => 'Bb Trumpet II',
     'shortInstrumentName' => 'Trp. II',
@@ -373,7 +418,9 @@ $instrument{'trumpetII'} = Instrument->new ({
     'clef'                => 'treble',
     'transposition'       => 'bf'
 }) ;
-$instrument{'trumpetIII'} = Instrument->new ({
+push( @{$instrumentSection{'Trumpets'}}, $instrument) ; 
+
+$instrument = Instrument->new ({
     'name'                => 'trumpetIII',
     'instrumentName'      => 'Bb Trumpet III',
     'shortInstrumentName' => 'Trp. III',
@@ -381,7 +428,9 @@ $instrument{'trumpetIII'} = Instrument->new ({
     'clef'                => 'treble',
     'transposition'       => 'bf'
 }) ;
-$instrument{'trumpetIV'} = Instrument->new ({
+push( @{$instrumentSection{'Trumpets'}}, $instrument) ; 
+
+$instrument = Instrument->new ({
     'name'                => 'trumpetIV',
     'instrumentName'      => 'Bb Trumpet IV',
     'shortInstrumentName' => 'Trp. IV',
@@ -389,14 +438,10 @@ $instrument{'trumpetIV'} = Instrument->new ({
     'clef'                => 'treble',
     'transposition'       => 'bf'
 }) ;
-$instrumentSection{'Trumpets'} = ( 
-	$instrument{'trumpetI'}, 
-	$instrument{'trumpetII'}, 
-	$instrument{'trumpetIII'}, 
-	$instrument{'trumpetIV'}
-) ;
+push( @{$instrumentSection{'Trumpets'}}, $instrument) ; 
 
-$instrument{'horn'} = Instrument->new ({
+
+$instrument = Instrument->new ({
     'name'                => 'horn',
     'instrumentName'      => 'F Horn',
     'shortInstrumentName' => 'Hrn.',
@@ -404,11 +449,10 @@ $instrument{'horn'} = Instrument->new ({
     'clef'                => 'treble',
     'transposition'       => 'f'
 }) ;
-$instrumentSection{'Horns'} = ( 
-	$instrument{'horn'}
-) ;
+push( @{$instrumentSection{'Horns'}}, $instrument) ; 
 
-$instrument{'tromboneI'} = Instrument->new ({
+
+$instrument = Instrument->new ({
     'name'                => 'tromboneI',
     'instrumentName'      => 'Trombone I',
     'shortInstrumentName' => 'Trb. I',
@@ -416,7 +460,9 @@ $instrument{'tromboneI'} = Instrument->new ({
     'clef'                => 'treble',
     'transposition'       => 'c'
 }) ;
-$instrument{'tromboneII'} = Instrument->new ({
+push( @{$instrumentSection{'Trombones'}}, $instrument) ; 
+
+$instrument = Instrument->new ({
     'name'                => 'tromboneII',
     'instrumentName'      => 'Trombone II',
     'shortInstrumentName' => 'Trb. II',
@@ -424,7 +470,9 @@ $instrument{'tromboneII'} = Instrument->new ({
     'clef'                => 'treble',
     'transposition'       => 'c'
 }) ;
-$instrument{'tromboneIII'} = Instrument->new ({
+push( @{$instrumentSection{'Trombones'}}, $instrument) ; 
+
+$instrument = Instrument->new ({
     'name'                => 'tromboneIII',
     'instrumentName'      => 'Trombone III',
     'shortInstrumentName' => 'Trb. III',
@@ -432,7 +480,9 @@ $instrument{'tromboneIII'} = Instrument->new ({
     'clef'                => 'treble',
     'transposition'       => 'c'
 }) ;
-$instrument{'tromboneIV'} = Instrument->new ({
+push( @{$instrumentSection{'Trombones'}}, $instrument) ; 
+
+$instrument = Instrument->new ({
     'name'                => 'tromboneIV',
     'instrumentName'      => 'Trombone IV',
     'shortInstrumentName' => 'Trb. IV',
@@ -440,20 +490,18 @@ $instrument{'tromboneIV'} = Instrument->new ({
     'clef'                => 'treble',
     'transposition'       => 'c'
 }) ;
-$instrumentSection{'Trombones'} = ( 
-	$instrument{'tromboneI'}, 
-	$instrument{'tromboneII'}, 
-	$instrument{'tromboneIII'}, 
-	$instrument{'tromboneIV'}
-) ;
+push( @{$instrumentSection{'Trombones'}}, $instrument) ; 
 
-$instrument{'drums'} = DrumInstrument->new ({
+
+$instrument = Instrument->new ({
     'name'                => 'drums',
     'instrumentName'      => 'Drums',
     'shortInstrumentName' => 'Drums',
     'midiInstrument'      => 'drums'
 }) ;
-$instrument{'piano'} = PianoInstrument->new ({
+push( @{$instrumentSection{'Rhythm'}}, $instrument) ; 
+
+$instrument = Instrument->new ({
     'name'                => 'piano',
     'instrumentName'      => 'Piano',
     'shortInstrumentName' => 'piano',
@@ -462,7 +510,9 @@ $instrument{'piano'} = PianoInstrument->new ({
     'transposition'       => 'c',
     'clefBelow'           => 'bass'
 }) ;
-$instrument{'guitar'} = Instrument->new ({
+push( @{$instrumentSection{'Rhythm'}}, $instrument) ; 
+
+$instrument = Instrument->new ({
     'name'                => 'guitar',
     'instrumentName'      => 'Guitar',
     'shortInstrumentName' => 'Gtr.',
@@ -470,7 +520,9 @@ $instrument{'guitar'} = Instrument->new ({
     'clef'                => 'treble',
     'transposition'       => 'c'
 }) ;
-$instrument{'bass'} = Instrument->new ({
+push( @{$instrumentSection{'Rhythm'}}, $instrument) ; 
+
+$instrument = Instrument->new ({
     'name'                => 'bass',
     'instrumentName'      => 'Bass',
     'shortInstrumentName' => 'Bass',
@@ -478,32 +530,24 @@ $instrument{'bass'} = Instrument->new ({
     'clef'                => 'bass',
     'transposition'       => 'c'
 }) ;
-$instrumentSection{'Rhythm'} = ( 
-	$instrument{'drums'}, 
-	$instrument{'piano'}, 
-	$instrument{'guitar'}, 
-	$instrument{'bass'}
-) ;
+push( @{$instrumentSection{'Rhythm'}}, $instrument) ; 
 
 
 #
 #  Add instrument sections (staff groups) to scores
 #
-my $score
+my $score ; 
 my $instrumentSectionName ; 
 my @instruments ; 
-my @staffGroups ; 
 foreach $score (@scores) {
 
     foreach $instrumentSectionName (@instrumentSections) {
-
-        (@instruments) = $instrumentSection{$instrumentSectionName} ; 
         
         my $staffGroup = StaffGroup->new({
            'name'        => $instrumentSectionName,
-           'instruments' => \@instruments,
+           'instruments' => $instrumentSection{$instrumentSectionName},
         }) ;
-        push( @staffGroups, $staffGroup ) ; 
+        $score->pushStaffGroups( $staffGroup ) ; 
     }
 }
 
@@ -512,12 +556,13 @@ foreach $score (@scores) {
 #    Create the book    #
 #########################
 
+my %book ; 
 my $bookName = 'As It Is' ; 
 $book{'master'} = Book->new({ 
     'name'       => $bookName,
     'version'    => '2.18.2',
     'includes'   => $includes,
-	'paper'      => $paper,
+    'paper'      => $paper{'score'},
     'header'     => $header,  
     'scores'     => \@scores, 
     'transposed' => 'Transposed'       
@@ -526,16 +571,20 @@ $book{'master'} = Book->new({
 #
 #  Create a rehearsal marks function file
 #
+my $fh ; 
 my %fh ; 
 my %filename ; 
 my %includes ; 
-$filename{'rehearsalMarks'} = 'rehearsal-marks.ly' ; 
-open( $fh{'rehearsalMarks'}, '>', $filename{'rehearsalMarks'} ) or 
-  die "Could not open rehearsal marks file '" . $filename{'rehearsalMarks'} . "': " . $! ; 
-print( $fh{'rehearsalMarks'}, $book{'full score'}->createConstructorFunctions( $filename{'rehearsalMarks'} ) ) ; 
+my $filename = 'rehearsal-marks.ly' ; 
+open( $fh, '>', $filename ) or 
+    die "Could not open rehearsal marks file '$filename': " . $! ; 
+print "$filename\n" ; 
+
+my $functionsRef = $book{'master'}->createConstructorFunctions( $filename{'rehearsalMarks'} ) ; 
+print $fh join("\n", @$functionsRef, '') ; 
+close $fh;
 
 my @includes = ( 'english.ly' ); 
-my %includes ;
 $includes{'global'} = ( \@includes ) ;
 
 #
@@ -546,21 +595,25 @@ $includes{'global'} = ( \@includes ) ;
 #      rehearsal marks invocation for instrument-score 
 #
 my $musicDir = 'music' ; 
-$book->writeMusicDefinitionsFiles( $musicDir ) ; 
+$book{'master'}->writeMusicDefinitionsFiles( $musicDir ) ; 
 
 #
 #  For each score,
 #      Create chart for score - transposed
 #      Create chart for condensed score - concert  
 #
-my $score ; 
-my (@scores) = $book->{'master'}->scores() ; 
+my $scoresRef = $book{'master'}->scores() ; 
+@scores = @$scoresRef ; 
+my $suffix ; 
 my $visiblePartName ;
 my %chartNames ; 
+my @theseScores ; 
 my %chart ; 
 my $scoreNumber = 0 ; 
 my $scoreNumeral; 
 my $lastNumber = 0 + @scores ; 
+my $lastNumeral = Roman($lastNumber) ; 
+my @rendered ; 
 
 foreach $score (@scores) {
 
@@ -568,22 +621,23 @@ foreach $score (@scores) {
     ++$scoreNumber ;
     $scoreNumeral = Roman($scoreNumber);
 
-    for $suffix in ( 'Transposed', 'Concert' ) { 
+    foreach $suffix ( 'Transposed', 'Concert' ) { 
 
-        $filename = 'scores/' . $score->name() . '-$suffix.ly' ; 
+        $filename = 'scores/' . $score->name() . '-' . $suffix . '.ly' ; 
         open( $fh, '>', $filename ) or 
             die "Could not open score file '$filename': " . $! ;  
-
-        $visiblePartName = "Score - $scoreNumeral of $lastNumber: $scoreName ($suffix)" ; 
+        print "$filename\n" ; 
+        $visiblePartName = "Score - $scoreNumeral of $lastNumeral: $scoreName ($suffix)" ; 
 
         $chartNames{$visiblePartName} = ChartNames->new ({ 
             'chartName'       => $scoreName,     
             'visiblePartName' => $visiblePartName 
         }) ; 
 
-        my $book{$visiblePartName} = Book->new ({
+        @theseScores = ( $score ) ;
+        $book{$visiblePartName} = Book->new ({
             'name'       => $bookName . $score->name(), 
-            'scores'     => $score,
+            'scores'     => \@theseScores,
             'transposed' => $suffix eq 'Transposed' 
         }) ;
 
@@ -593,12 +647,14 @@ foreach $score (@scores) {
             'page'     => $page{'score'}, 
             'names'    => $chartNames{$visiblePartName}, 
             'book'     => $book{$visiblePartName}
-        ) ; 
+        }) ; 
 
-        print( $fh, $chart{$scoreName}->render() ) ; 
-        close( $fh ) ; 
+        (@rendered) = $chart{$visiblePartName}->render() ; 
+        print $fh join("\n", @rendered, '') ; 
+        close $fh ; 
     }
 }
+exit 0 ; 
 
 #
 #      Create chart for full score - transposed
@@ -623,7 +679,7 @@ $chart{$visiblePartName} = Chart->new ({
     'book'     => $book{'master'}
 }) ;
 
-print( $fh, $chart{$scoreName}->render() ) ; 
+#print( $fh, $chart{$visiblePartName}->render() ) ; 
 close( $fh ) ; 
 
 #
@@ -651,15 +707,15 @@ $chart{$visiblePartName} = Chart->new ({
     'book'     => $book{$visiblePartName}
 }) ;
 
-print( $fh, $chart{$scoreName}->render() ) ; 
+#print( $fh, $chart{$scoreName}->render() ) ; 
 close( $fh ) ; 
 
 #
 #      For each instrument, 
 #          Create chart for part - transposed
 #
-my $instrument ; 
-my @instruments = $book{'master'}->instruments() ;
+my $instrumentName ; 
+@instruments = $book{'master'}->instruments() ;
 foreach $instrument (@instruments) {
 
     $instrumentName = $instrument->name() ; 
@@ -688,5 +744,4 @@ foreach $instrument (@instruments) {
 }
 
 #  Condensed Score - Concert
-
 

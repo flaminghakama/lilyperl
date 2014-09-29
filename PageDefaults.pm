@@ -1,16 +1,16 @@
 package PageDefaults ; 
 use Page ; 
+use Paper ; 
+use Layout ; 
 
-use constant { TRUE => 1, FALSE = 0 } ; 
+our %paper ; 
+our %page ; 
 
-my %paper ; 
-my %page ; 
-
-my $paper{'part'} = Paper->new
+$paper{'part'} = Paper->new
     ({ 'size'        => 'letter', 
        'orientation' => 'portrait' }) ; 
 
-my $paper{'score'} = Paper->new
+$paper{'score'} = Paper->new
     ({ 'size'        => 'poster', 
        'orientation' => 'landscape' }) ; 
 
@@ -35,19 +35,19 @@ my $fonts = Fonts->new
        'secondary' => 'Highlander ITC TT',
        'chords'    => 'Papyrus'  }) ; 
 
-my $page{'part'} = Page->new
-    ({ 'page'       => $partPage, 
+$page{'part'} = Page->new
+    ({ 'paper'      => $paper{'part'}, 
        'space'      => $space,
        'pagination' => $pagination, 
        'fonts'      => $fonts       }) ;
 
-my $page{'score'} = Page->new
-    ({ 'page'       => $scorePage, 
+$page{'score'} = Page->new
+    ({ 'paper'      => $paper{'score'}, 
        'space'      => $space,
        'pagination' => $pagination, 
        'fonts'      => $fonts       }) ;
 
-my $layout = Layout->new
+our $layout = Layout->new
     ({ 'indent'            => '3\cm',
         'shortIndent'      => '.25\cm',
         'chordFontSize'    => '3',
