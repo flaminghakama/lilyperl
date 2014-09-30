@@ -3,7 +3,6 @@
 use strict;
 use warnings;
 use Roman;
-use parent 'Clone';
 
 use Book ;
 use PageDefaults ; 
@@ -683,13 +682,13 @@ $chart{$visiblePartName} = Chart->new ({
 print $fh join("\n", @rendered, '') ; 
 close $fh ; 
 
-
 #
 #      Create chart for full score - concert
 #
 $filename = 'scores/Concert.ly' ; 
 open( $fh, '>', $filename ) or 
     die "Could not open score file '$filename': " . $! ;  
+print "$filename\n" ; 
 
 $visiblePartName = "Score (Concert)" ; 
 
@@ -709,9 +708,10 @@ $chart{$visiblePartName} = Chart->new ({
     'book'     => $book{$visiblePartName}
 }) ;
 
-(@rendered) = $chart{$scoreName}->render() ;
+(@rendered) = $chart{$visiblePartName}->render() ;
 print $fh join("\n", @rendered, '') ; 
 close $fh  ; 
+
 
 #
 #      For each instrument, 
@@ -719,6 +719,8 @@ close $fh  ;
 #
 my $instrumentName ; 
 @instruments = $book{'master'}->instruments() ;
+my $book = $book{'master'} ; 
+my $part ; 
 foreach $instrument (@instruments) {
 
     $instrumentName = $instrument->name() ; 
@@ -726,6 +728,7 @@ foreach $instrument (@instruments) {
 
     open( $fh, '>', $filename ) or 
         die "Could not open score file '$filename': " . $! ;  
+    print "$filename\n" ;
 
     $visiblePartName = $instrumentName ;  ; 
 
@@ -735,15 +738,18 @@ foreach $instrument (@instruments) {
         'visiblePartName' => $visiblePartName 
     }) ; 
 
-    my $book = $book{'master'} ; 
-
+    $part = $book->part( $instrumentName ) ; 
     $chart{$visiblePartName} = Chart->new ({
         'version'  => '2.18.2',
         'includes' => $includes,
         'page'     => $page{'part'}, 
         'names'    => $chartNames{$visiblePartName}, 
-        'book'     => $book->part( $instrumentName ) 
+        'book'     => $part
     }) ;
+
+    (@rendered) = $chart{$visiblePartName}->render() ;
+    print $fh join("\n", @rendered, '') ; 
+    close $fh  ; 
 }
 
 #  Condensed Score - Concert

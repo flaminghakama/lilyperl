@@ -1,4 +1,6 @@
 package Header ; 
+use parent 'Lilyperl' ;
+
 sub new {
     my $class = shift;
     my $self = shift ; 

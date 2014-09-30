@@ -1,4 +1,5 @@
 package Chart ; 
+use parent 'Lilyperl' ;
 use Book ; 
 use Includes ;
 use PageDefaults ;

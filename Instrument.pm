@@ -1,4 +1,5 @@
 package Instrument ; 
+use parent 'Lilyperl' ;
 use Staff ; 
 use StaffGroup ; 
 
@@ -16,30 +17,6 @@ sub new {
             staff => shift,
             include => shift,
             StaffGroup => shift 
-        } ; 
-    }
-    return bless $self, $class;
-}
-
-#
-#  Make a duplicate version of the object
-#  and update any specied properties.
-#
-sub clone {
-    my $self = shift ; 
-    my $properties = shift ; 
-
-
-    unless ( ref($self) eq 'HASH' ) { 
-        $self = {
-            name => $self,
-            instrumentName => shift, 
-            shortInstrumentName => shift,
-            midiInstrument => shift,
-            clef => shift,
-            transposition => shift, 
-            staff => shift,
-            include => shift  
         } ; 
     }
     return bless $self, $class;

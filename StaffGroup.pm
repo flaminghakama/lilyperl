@@ -1,4 +1,5 @@
 package StaffGroup ; 
+use parent 'Lilyperl' ;
 use Staff ; 
 
 sub new {
@@ -11,19 +12,6 @@ sub new {
         }
     } ;
     return bless $self, $class;
-}
-
-sub clone {
-    my $self = shift;
-    my $copy;
-    foreach my $key (keys %$self) {
-        if(ref $self->{$key}) {
-            $copy->{$key} = $self->{$key}->clone(); 
-        } else {
-            $copy->{$key} = $self->{$key};
-        }
-    }
-    bless $copy, ref $self;
 }
 
 sub name {
@@ -63,7 +51,8 @@ sub instrument {
     my $self = shift ; 
     my $name = shift ; 
     my $instrument ; 
-    my @instruments = $self->instruments() ; 
+    my $instrumentsRef = $self->instruments() ; 
+    my @instruments = @$instrumentsRef ; 
     foreach $instrument (@instruments) {
         return $instrument if ( $instrument->name() eq $name ) ; 
     }

@@ -1,4 +1,5 @@
 package Section ; 
+use parent 'Lilyperl' ;
 use Instrument ; 
 
 sub new {

@@ -1,4 +1,5 @@
 package Includes;
+use parent 'Lilyperl' ;
 
 sub new {
     my ($class, @files) = @_;

@@ -1,4 +1,5 @@
 package Book ; 
+use parent 'Lilyperl' ;
 use Paper ; 
 use Header ; 
 use Score ; 
@@ -41,32 +42,6 @@ sub new {
         $self->{musicDefinitions} = MusicDefinitions->new() ; 
     }
     return bless $self, $class;
-}
-
-sub clone {
-    my $self = shift;
-    my $copy;
-    foreach my $key (keys %$self) {
-        if( ref($self->{$key}) eq 'ARRAY' )  {
-            my @things ; 
-            my $thing ; 
-            foreach $thing ( @{ $self->{$key} } ) { 
-                if ( ref $thing ) {
-                    push( @things, $thing->clone() ) ; 
-                } else { 
-                    push( @things, $thing ) ; 
-                }
-            }
-            $copy->{$key} = \@things ; 
-        } else {
-            if ( ref $self->{$key} ) {
-                $copy->{$key} = $self->{$key}->clone(); 
-            } else {
-                $copy->{$key} = $self->{$key};
-            }
-        }
-    }
-    bless $copy, ref $self;
 }
 
 sub name {
@@ -251,7 +226,7 @@ sub instruments {
     my $scoreName = shift ; 
     my $score ; 
     my $scoresRef = $self->scores() ; 
-    my @scores = @scoresRef ; 
+    my @scores = @$scoresRef ; 
     foreach $score (@scores) {
         unless ( $scoreName ) { 
             return $score->instruments() ; 
@@ -286,31 +261,35 @@ sub part {
     my $instrumentName = shift ; 
     my $score ; 
     my $scoresRef = $self->scores() ; 
-    my @scores = $scoresRef ; 
+    my @scores = @$scoresRef ; 
     my $partScore ; 
+    my $staffGroupsRef ; 
     my @staffGroups ;
     my $staffGroup ; 
-    my @partStaffGroup ; 
-    my @theseInstruments ; 
-    my @instruments ; 
+    my $instrument ; 
     my @partScores ; 
     my $part = $self->clone() ; 
     foreach $score (@scores) {
         my $partScore = $score->clone() ;
-        (@staffGroups) = $partScore->staffGroups() ; 
+        $staffGroupsRef = $partScore->staffGroups() ; 
+        @staffGroups = @$staffGroupsRef ; 
+        my @partStaffGroups ; 
         foreach $staffGroup (@staffGroups) {
+            my @instruments ;
             my $partStaffGroup = $staffGroup->clone() ;
-            (@theseInstruments) = $partStaffGroup->instrument( $instrumentName ) ;
-            if ( @theseInstruments ) {
-                push( @instruments, @theseInstruments ) ; 
+            $instrument = $partStaffGroup->instrument( $instrumentName ) ;
+            if ( $instrument ) { 
+                push( @instruments, $instrument ) ; 
             }
-            $partStaffGroup->instruments( \@instruments ) ;
+            if ( @instruments ) {
+                $partStaffGroup->instruments( \@instruments ) ;
+                push( @partStaffGroups, $partStaffGroup ) ;
+            } 
         }
-        push( @partStaffGroups, $partStaffGroup ) ;
         $partScore->staffGroups( \@partStaffGroups ) ; 
         push( @partScores, $partScore ) ; 
     }
-    $part->pushScores( @partScores ) ; 
+    $part->scores( \@partScores ) ; 
     return $part ; 
 }
 

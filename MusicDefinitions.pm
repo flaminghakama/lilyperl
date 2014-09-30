@@ -1,4 +1,5 @@
 package MusicDefinitions ; 
+use parent 'Lilyperl' ;
 
 sub new {
     my $class = shift;

@@ -1,4 +1,5 @@
 package Paper;
+use parent 'Lilyperl' ;
 
 sub new {
     my $class = shift;

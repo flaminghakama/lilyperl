@@ -1,8 +1,8 @@
 package Score ;
+use parent 'Lilyperl' ;
 use StaffGroup ;  
 use Section ; 
 use Layout ; 
-use parent 'Clone';
 
 sub new {
     my $class = shift;
@@ -35,19 +35,6 @@ sub new {
         $self->{lilypond} = \@lilypond ; 
     }
     return bless $self, $class;
-}
-
-sub clone {
-    my $self = shift;
-    my $copy;
-    foreach my $key (keys %$self) {
-        if(ref $self->{$key}) {
-            $copy->{$key} = $self->{$key}->clone(); 
-        } else {
-            $copy->{$key} = $self->{$key};
-        }
-    }
-    bless $copy, ref $self;
 }
 
 sub name {
@@ -332,9 +319,12 @@ sub createChordDefinitions {
     } else {
         unless ( defined $self->{instruments} ) {
             my $staffGroup ; 
-            my (@staffGroups) = $self->staffGroups() ; 
+            my $staffGroupsRef = $self->staffGroups() ; 
+            my @staffGroups = @$staffGroupsRef ; 
+            my $instrumentsRef ; 
             foreach $staffGroup (@staffGroups) {
-                push( @instruments, $staffGroup->instruments() ) ; 
+                $instrumentsRef = $staffGroup->instruments() ; 
+                push( @instruments, @$instrumentsRef ) ; 
             }
         }
     }
