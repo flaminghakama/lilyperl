@@ -15,6 +15,14 @@ sub files {
     return $self->{files};
 }
 
+sub pushFiles {
+    my ( $self, @newFiles ) = @_ ; 
+    return $self->{files} unless @newFiles ; 
+    my $filesRef = $self->files() ; 
+    my @files = ( @$filesRef, @newFiles ) ; 
+    return $self->files( @files ) ;
+}
+
 sub render { 
     my $self = shift ; 
     my $fileRef = $self->{files} ; 

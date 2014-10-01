@@ -579,8 +579,8 @@ open( $fh, '>', $filename ) or
     die "Could not open rehearsal marks file '$filename': " . $! ; 
 print "$filename\n" ; 
 
-my $functionsRef = $book{'master'}->createConstructorFunctions( $filename{'rehearsalMarks'} ) ; 
-print $fh join("\n", @$functionsRef, '') ; 
+my $functionsRef = $book{'master'}->createConstructorFunctions( $filename ) ; 
+print $fh join("\n", "%%%%% Constructor Functions for " . $book{'master'}->name() . " %%%%%", '', @$functionsRef, '') ; 
 close $fh;
 
 my @includes = ( 'english.ly' ); 
@@ -594,6 +594,7 @@ $includes{'global'} = ( \@includes ) ;
 #      rehearsal marks invocation for instrument-score 
 #
 my $musicDir = 'music' ; 
+$book{'master'}->pushIncludes( '../flaming-chords.ly' ) ; 
 $book{'master'}->writeMusicDefinitionsFiles( $musicDir ) ; 
 
 #

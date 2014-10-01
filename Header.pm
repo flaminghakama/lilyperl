@@ -114,6 +114,8 @@ sub render {
     my $self = shift ; 
     my $margin = shift ;
     my $indent = $margin . '    ' ; 
+    my @lilypond ; 
+    $self->lilypond( \@lilypond ) ;  
     $self->conditionalLily( $self->piece(), $indent . 'piece = "', '"') ;  
     $self->conditionalLily( $self->source(), $indent . 'source = "', '"') ;
     $self->conditionalLily( $self->style(), $indent . 'style = "', '"') ;

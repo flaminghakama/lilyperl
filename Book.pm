@@ -62,6 +62,12 @@ sub includes {
     return $self->{includes};
 }
 
+sub pushIncludes {
+    my ( $self, @files ) = @_; 
+    return $self->{includes} unless @files ; 
+    return $self->includes()->pushFiles( @files ) ; 
+}
+
 sub page {
     my ( $self, $value ) = @_; 
     $self->{page} = $value if defined $value ; 
@@ -168,8 +174,11 @@ sub writeMusicDefinitionsFiles {
             die "Could not open music definitions file '$filename': " . $! ;  
         print "$filename\n" ; 
         (@lilypond) = ( 
+            "%%%%% Music definitions for staff group $staffGroupName for " . $self->name() . " %%%%%", 
             $self->version(), 
-            $self->musicDefinitions()->functionsInclude()->render()
+            $self->includes()->render(), 
+            $self->musicDefinitions()->functionsInclude()->render(),
+            ''
         ) ;
         foreach $score (@scores) {
             push( @lilypond, $score->createMusicDefinitions($staffGroupName) ) ; 
